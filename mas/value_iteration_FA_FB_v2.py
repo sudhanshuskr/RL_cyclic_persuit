@@ -1,7 +1,7 @@
 from components.imports import *
 from components.u_classes import *
 from components.controller import *
-
+from datetime import datetime
 from components.functions import *
 from tqdm import tqdm
 from matplotlib.patches import Circle
@@ -126,9 +126,12 @@ if PLOT ==1 :
 traj_cost = 0
 traj_cost_list = []
 traj_cost_avg = 0
-
+with open("save_dump/log.txt", 'a') as file:
+    file.write(f"######################### Starting new run at : {datetime.now()}  ###############################\n")
 Weights_track = []
 for i in range(EPOCH):
+    with open("save_dump/log.txt", 'a') as file:
+            file.write(f"Epoch number {i} - Time : {datetime.now()}\n")
     for episode in tqdm(range(EPISODES), desc= "Episode number : {} of {} | Trajectory cost = {:.2f} ".format(i,EPOCH,traj_cost)):
         
         REWARDS = []
@@ -209,9 +212,7 @@ for i in range(EPOCH):
                 collision = check_collision(ind)
                 if collision == 0:
                     break
-                REWARDS[ind].append(-J_i_int(ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,[cx,cy],r0,d0,N))
-                # print(-J_i_int(ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,[cx,cy],r0,d0,N))
-              
+                REWARDS[ind].append(-J_i_int(ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,[cx,cy],r0,d0,N))              
                 update_vec = safe_gradient_filter(ind,cx,cy)
                 update_dir = vec_to_direction(update_vec)
                 ACTIONS[ind].append(update_dir)
@@ -228,57 +229,13 @@ for i in range(EPOCH):
                         disc_time += 1
                     if tau + SARSA_n < EPISODE_LENGTH:
                         G = G + ((GAMMA**SARSA_n)*q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C))
-                        # print(np.max(np.array(STATE[ind][t+1])))
-                        # print("%.2f" % tau,"%.2f" % q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C),"%.2f" % G)
-                        # print(tau,q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C))
-                        # print(np.max(v_func_w))
                     v_func_w = update_weights(STATE[ind][tau],ACTIONS[ind][tau],v_func_w,C,G)
                 if tau >=EPISODE_LENGTH-1:
                     break
-            
-                    
-                    
-
-
-
-
-
-                # if episode == EPISODES-1:
-                #     #use greedy action
-                #     continue
-                # if random.random() > epsilon:
-                #     min_angle = random.uniform(0,2*np.pi)
-                                
-                
-                
-                
-                #update value function weights
-            #move all agents
-            # for ind in range(N):
-                # move_agent(ag[ind],controls[ind])
-                # collision = check_collision(ind)
-                # if collision == 0:
-                #     break
-
-        
             [cx,cy] = get_centroid(ag)
             
             for a in ag:
                 traj.append([a.x,a.y,a.theta])
-            # if collision != 0: 
-            #     for est in range(ESTIMATION_FREQ):    
-            #         temp_estimate = [centroid_estimate[0][0],centroid_estimate[0][1]] 
-            #         for c in range(N):
-            #             if c == N - 1:
-            #                 centroid_estimate[c][0] = 0.5*(centroid_estimate[c][0] + temp_estimate[0]) + ((v/ESTIMATION_FREQ)*np.cos((controls[c]/na)*(2*np.pi)))
-            #                 centroid_estimate[c][1] = 0.5*(centroid_estimate[c][1] + temp_estimate[1]) + ((v/ESTIMATION_FREQ)*np.sin((controls[c]/na)*(2*np.pi)))
-            #                 break
-            #             centroid_estimate[c][0] = 0.5*(centroid_estimate[c][0] + centroid_estimate[c+1][0]) + ((v/ESTIMATION_FREQ)*np.cos((controls[c]/na)*(2*np.pi)))
-            #             centroid_estimate[c][1] = 0.5*(centroid_estimate[c][1] + centroid_estimate[c+1][1]) + ((v/ESTIMATION_FREQ)*np.sin((controls[c]/na)*(2*np.pi)))
-
-
-
-
             t = t+1
             
 
@@ -307,12 +264,7 @@ for i in range(EPOCH):
 
             if count > EPISODE_LENGTH:
                 break
-        # print(np.array(Weights_track).shape)
-        # np.save("FA_weights_1.npy",np.array(Weights_track))
     if SAVE == 1:
         np.save("FA_weights_1.npy",np.array(Weights_track))
-        # np.save("q_func_BR_v1.npy",q_func)
-        # np.save("traj_cost_PG_trial1",np.array(traj_cost_list))
-
 plt.waitforbuttonpress()
 
