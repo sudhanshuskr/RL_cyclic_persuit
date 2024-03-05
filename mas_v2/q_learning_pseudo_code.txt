@@ -1,0 +1,9 @@
+
+
+
+initialise the q_values
+
+
+initialise one epiisode :
+    Spawn the agents
+    
