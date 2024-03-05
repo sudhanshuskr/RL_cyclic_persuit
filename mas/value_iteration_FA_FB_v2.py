@@ -229,7 +229,7 @@ for i in range(EPOCH):
                     if tau + SARSA_n < EPISODE_LENGTH:
                         G = G + ((GAMMA**SARSA_n)*q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C))
                         # print(np.max(np.array(STATE[ind][t+1])))
-                        print("%.2f" % tau,"%.2f" % q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C),"%.2f" % G)
+                        # print("%.2f" % tau,"%.2f" % q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C),"%.2f" % G)
                         # print(tau,q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C))
                         # print(np.max(v_func_w))
                     v_func_w = update_weights(STATE[ind][tau],ACTIONS[ind][tau],v_func_w,C,G)
