@@ -25,16 +25,16 @@ cost_alpha = 0.5
 EPSILON_TRAIN = 1
 EPSILON_TEST = 1
 learning_rate = 0.2e-8
-EPISODES = 10
+EPISODES = 40
 GAMMA = 0.8
 EPOCH = 80
 TAU = 200
 ESTIMATION_FREQ = 1
 spawn_center = (-14,-14)
-EPISODE_LENGTH = 200
+EPISODE_LENGTH = 400
 step_ahead_w = 0
 
-SAVE = 0
-PLOT = 1
+SAVE = 1
+PLOT = 0
 
-SARSA_n = 2
+SARSA_n = 8

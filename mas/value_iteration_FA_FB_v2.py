@@ -217,7 +217,8 @@ for i in range(EPOCH):
                 ACTIONS[ind].append(update_dir)
                 ACTIONS_VEC[ind].append(update_vec)
                 tau = t - SARSA_n + 1
-                Weights_track.append(v_func_w)
+                if t%40 == 0:
+                    Weights_track.append(v_func_w)
                 if tau>=0:
                     final_T = np.minimum(EPISODE_LENGTH,tau + SARSA_n)
                     disc_time = tau+1
@@ -309,8 +310,9 @@ for i in range(EPOCH):
         # print(np.array(Weights_track).shape)
         # np.save("FA_weights_1.npy",np.array(Weights_track))
     if SAVE == 1:
+        np.save("FA_weights_1.npy",np.array(Weights_track))
         # np.save("q_func_BR_v1.npy",q_func)
-        np.save("traj_cost_PG_trial1",np.array(traj_cost_list))
+        # np.save("traj_cost_PG_trial1",np.array(traj_cost_list))
 
 plt.waitforbuttonpress()
 
