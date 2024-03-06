@@ -132,7 +132,7 @@ Weights_track = []
 for i in range(EPOCH):
     with open("save_dump/log.txt", 'a') as file:
             file.write(f"Epoch number {i} - Time : {datetime.now()}\n")
-    for episode in tqdm(range(EPISODES), desc= "Episode number : {} of {} | Trajectory cost = {:.2f} ".format(i,EPOCH,traj_cost)):
+    for episode in range(EPISODES):
         
         REWARDS = []
         for ind in range(N):
@@ -230,6 +230,9 @@ for i in range(EPOCH):
                     if tau + SARSA_n < EPISODE_LENGTH:
                         G = G + ((GAMMA**SARSA_n)*q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C))
                     v_func_w = update_weights(STATE[ind][tau],ACTIONS[ind][tau],v_func_w,C,G)
+                    if episode%40 == 0:
+                        with open("save_dump/log.txt", 'a') as file:
+                            file.write(f"Weight have been updated at Epoch : {i} and episode : {episode} - Time : {datetime.now()}\n")
                 if tau >=EPISODE_LENGTH-1:
                     break
             [cx,cy] = get_centroid(ag)
@@ -266,5 +269,7 @@ for i in range(EPOCH):
                 break
     if SAVE == 1:
         np.save("FA_weights_1.npy",np.array(Weights_track))
+        with open("save_dump/log.txt", 'a') as file:
+            file.write(f"Weights file has been saved @ Epoch {i} - Time : {datetime.now()}\n")
 plt.waitforbuttonpress()
 
