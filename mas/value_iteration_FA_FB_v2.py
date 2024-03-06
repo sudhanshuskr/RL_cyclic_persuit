@@ -230,9 +230,9 @@ for i in range(EPOCH):
                     if tau + SARSA_n < EPISODE_LENGTH:
                         G = G + ((GAMMA**SARSA_n)*q_fa(STATE[ind][t+1],ACTIONS[ind][t+1],v_func_w,C))
                     v_func_w = update_weights(STATE[ind][tau],ACTIONS[ind][tau],v_func_w,C,G)
-                    if t%40 == 0 and episode%4==0:
+                    if t%40 == 0 and episode%4==0 and ind == 0 :
                         with open("save_dump/log.txt", 'a') as file:
-                            file.write(f"Weight have been updated at Epoch : {i} and episode : {episode} - Time : {datetime.now()}\n")
+                            file.write(f"Weight have been updated [timestep = {t}] at Epoch : {i} and episode : {episode} - Time : {datetime.now()}\n")
                 if tau >=EPISODE_LENGTH-1:
                     break
             [cx,cy] = get_centroid(ag)
