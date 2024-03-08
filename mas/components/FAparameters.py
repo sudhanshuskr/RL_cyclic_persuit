@@ -31,10 +31,10 @@ EPOCH = 40
 TAU = 200
 ESTIMATION_FREQ = 1
 spawn_center = (-14,-14)
-EPISODE_LENGTH = 200
+EPISODE_LENGTH = 40
 step_ahead_w = 0
 
-SAVE = 1
+SAVE = 0
 PLOT = 0
 
 SARSA_n = 8
