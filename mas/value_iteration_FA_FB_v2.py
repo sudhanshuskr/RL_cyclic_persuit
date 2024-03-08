@@ -127,9 +127,9 @@ if PLOT ==1 :
 with open("save_dump/log.txt", 'a') as file:
     file.write(f"######################### Starting new run at : {datetime.now()}  ###############################\n")
 Weights_track = []
-for i in range(EPOCH):
+for epoch in range(EPOCH):
     with open("save_dump/log.txt", 'a') as file:
-            file.write(f"Epoch number {i} - Time : {datetime.now()}\n")
+            file.write(f"Epoch number {epoch} - Time : {datetime.now()}\n")
     for episode in range(EPISODES):
         
         REWARDS = []
@@ -227,9 +227,9 @@ for i in range(EPOCH):
                     if tau + SARSA_n < EPISODE_LENGTH:
                         G = G + ((GAMMA**SARSA_n)*q_fa(STATE[ind][-1],ACTIONS[ind][-1],v_func_w,C))
                     v_func_w = update_weights(STATE[ind][0],ACTIONS[ind][0],v_func_w,C,G)
-                    if tau%40 == 0 and episode%4==0 and ind == 0 :
+                    if tau%100 == 0 and episode%19==0 and ind == 0 :
                         with open("save_dump/log.txt", 'a') as file:
-                            file.write(f"Weight have been updated [timestep = {t}] at Epoch : {i} and episode : {episode} - Time : {datetime.now()}\n")
+                            file.write(f"Weight have been updated [timestep = {t}] at Epoch : {epoch} and episode : {episode} - Time : {datetime.now()}\n")
                 if tau >EPISODE_LENGTH-1:
                     break
             [cx,cy] = get_centroid(ag)
@@ -269,6 +269,6 @@ for i in range(EPOCH):
         np.save("save_dump/FA_weights_1.npy",np.array(Weights_track))
         np.save("sace_dump/v_func_weights.npy",v_func_w)
         with open("save_dump/log.txt", 'a') as file:
-            file.write(f"**UPDATE**--Weights file has been saved @ Epoch {i} - Time : {datetime.now()}\n")
+            file.write(f"**UPDATE**--Weights file has been saved @ Epoch {epoch} - Time : {datetime.now()}\n")
 plt.waitforbuttonpress()
 

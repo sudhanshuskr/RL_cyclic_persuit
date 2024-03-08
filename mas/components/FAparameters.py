@@ -34,7 +34,7 @@ spawn_center = (-14,-14)
 EPISODE_LENGTH = 400
 step_ahead_w = 0
 
-SAVE = 0
+SAVE = 1
 PLOT = 0
 
 SARSA_n = 8
