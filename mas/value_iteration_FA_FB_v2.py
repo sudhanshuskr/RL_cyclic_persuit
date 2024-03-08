@@ -227,7 +227,7 @@ for i in range(EPOCH):
                     if tau + SARSA_n < EPISODE_LENGTH:
                         G = G + ((GAMMA**SARSA_n)*q_fa(STATE[ind][-1],ACTIONS[ind][-1],v_func_w,C))
                     v_func_w = update_weights(STATE[ind][0],ACTIONS[ind][0],v_func_w,C,G)
-                    if t%40 == 0 and episode%4==0 and ind == 0 :
+                    if tau%40 == 0 and episode%4==0 and ind == 0 :
                         with open("save_dump/log.txt", 'a') as file:
                             file.write(f"Weight have been updated [timestep = {t}] at Epoch : {i} and episode : {episode} - Time : {datetime.now()}\n")
                 if tau >EPISODE_LENGTH-1:
