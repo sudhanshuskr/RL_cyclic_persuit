@@ -33,4 +33,4 @@ EPISODE_LENGTH = 350
 step_ahead_w = 0
 
 SAVE = 0
-PLOT = 1
+PLOT = 0

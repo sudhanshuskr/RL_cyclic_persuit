@@ -1,0 +1,4 @@
+######################### Starting new run at : 2024-03-08 11:32:23.720431  ###############################
+Epoch number 0 - Time : 2024-03-08 11:32:23.724095
+Weight have been updated [timestep = 7] at Epoch : 0 and episode : 0 - Time : 2024-03-08 11:32:24.251037
+Weight have been updated [timestep = 107] at Epoch : 0 and episode : 0 - Time : 2024-03-08 11:33:57.058579

@@ -1,7 +1,7 @@
 from components.imports import *
 from components.u_classes import *
 from components.controller import *
-
+from datetime import datetime
 from components.functions import *
 from tqdm import tqdm
 from matplotlib.patches import Circle
@@ -31,10 +31,13 @@ def get_temp_lin_agent(a,theta):
 
 
 def norm_state(states):
-    states = states + xlim
+    states = np.array(states) + xlim
     states = states/(2*xlim)
-    return states
-
+    return states.tolist()
+def norm_action(action):
+    action = action + np.pi
+    action = action/(2*np.pi)
+    return action
 def de_norm(states):
     states = states*(2*xlim)
     states = states - xlim
@@ -68,6 +71,35 @@ def safe_gradient_filter(ind,cx_0,cy_0):
 
     return xi
 
+def q_fa(S,A,wei,combin):
+    S = norm_state(S)
+    S.append(norm_action(A))
+    temp = np.matmul(combin,np.array(S).reshape(n_states,1))
+    temp = np.pi*temp
+    temp = np.cos(temp)
+    temp = temp.reshape(temp.shape[0],)
+    temp = np.dot(temp,wei)
+    
+    return temp
+
+def update_weights(S,A,W,combin,G):
+    # W = weights vector
+    # S = State vector 
+    # A =  
+    S = norm_state(S)
+    # print(np.max(np.array(S)))
+    S.append(norm_action(A))
+    
+    temp = np.matmul(combin,np.array(S).reshape(n_states,1))
+    temp = np.pi*temp
+    temp = np.cos(temp)
+    q_old = q_fa(S[:-1],A,W,C)
+    W = W + (learning_rate*(G - q_old)*temp).reshape(temp.shape[0],)
+    return W
+
+
+# def policy_FA(wei,combin,S):
+    
 
 
 global v_func_w,C
@@ -90,15 +122,17 @@ if PLOT ==1 :
     cent_data, = ax.plot(0, 0, 'bo') 
     circle = Circle((obs_x, obs_y), radius=1, color='blue', alpha=0.5)  # (0, 0) represents the center of the circle, radius=1 defines the radius of the circle
     ax.add_patch(circle)
-    plt.xlim(-25,25)    
-    plt.ylim(-25,25)
-traj_cost = 0
-traj_cost_list = []
-traj_cost_avg = 0
+    plt.xlim(-15,15)    
+    plt.ylim(-15,15)
 
-
-for i in range(EPOCH):
-    for episode in tqdm(range(EPISODES), desc= "Episode number : {} of {} | Trajectory cost = {:.2f} ".format(i,EPOCH,traj_cost)):
+with open("save_dump/log.txt", 'a') as file:
+    file.write(f"######################### Starting new run at : {datetime.now()}  ###############################\n")
+Weights_track = []
+for epoch in range(EPOCH):
+    with open("save_dump/log.txt", 'a') as file:
+            file.write(f"Epoch number {epoch} - Time : {datetime.now()}\n")
+    for episode in range(EPISODES):
+        
         REWARDS = []
         for ind in range(N):
             REWARDS.append([])
@@ -107,6 +141,10 @@ for i in range(EPOCH):
         ACTIONS = []
         for ind in range(N):
             ACTIONS.append([])
+        ACTIONS_VEC = []
+        for ind in range(N):
+            ACTIONS_VEC.append([])
+        
         STATE = []
         for ind in range(N):
             STATE.append([])
@@ -117,9 +155,6 @@ for i in range(EPOCH):
         else:
             epsilon = EPSILON_TRAIN
         centroid_estimate = np.zeros((N,2))
-        traj_cost_list.append(traj_cost)
-        traj_cost_avg = np.average(traj_cost_list[-episode:])
-        traj_cost = 0
         ag = []
         
         spawn_angle = random.uniform(0,2*np.pi)
@@ -140,12 +175,10 @@ for i in range(EPOCH):
             STATE[ind].append([ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,cx,cy])
 
         t = 0
-        traj = [[0,0,0]]
-        collision = 1
-        count = 0
         
+        collision = 1
+        G = 0
         while (collision):
-            count = count + 1
             
             controls = []
             if t == 0:
@@ -153,7 +186,8 @@ for i in range(EPOCH):
                     [cx,cy] = get_centroid(ag)
                     update_vec = safe_gradient_filter(ind,cx,cy)
                     update_dir = vec_to_direction(update_vec)
-                    ACTIONS[ind].append(update_vec)
+                    ACTIONS[ind].append(update_dir)
+                    ACTIONS_VEC[ind] = update_vec
 
             
             for ind in range(N):
@@ -165,64 +199,45 @@ for i in range(EPOCH):
 
 
 
-                move_agent(ag[ind],ACTIONS[ind][t])
+                move_agent(ag[ind],ACTIONS_VEC[ind])
                 [cx,cy] = get_centroid(ag)
-                STATE[ind].append([ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,cx,cy])
+                STATE[ind].append(tuple([ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,cx,cy]))
                 
                 collision = check_collision(ind)
                 if collision == 0:
                     break
-                REWARDS[ind].append(-J_i_int(ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,[cx,cy],r0,d0,N))
-                
+                REWARDS[ind].append(-J_i_int(ag[ind].x,ag[ind].y,ag[ind].target.x,ag[ind].target.y,[cx,cy],r0,d0,N))              
                 update_vec = safe_gradient_filter(ind,cx,cy)
                 update_dir = vec_to_direction(update_vec)
-                ACTIONS[ind].append(update_vec)
+                ACTIONS[ind].append(update_dir)
+                ACTIONS_VEC[ind] = update_vec
                 tau = t - SARSA_n + 1
-                
+                STATE[ind] = STATE[ind][-(SARSA_n+1):]
+                ACTIONS[ind] = ACTIONS[ind][-(SARSA_n+1):]
+                REWARDS[ind] = REWARDS[ind][-(SARSA_n+1):]
+                if tau>=0:
+                    final_T = np.minimum(EPISODE_LENGTH,tau + SARSA_n)
+                    disc_time = tau+1
+                    if G == 0:
+                        while disc_time<=final_T:
+                            G = G + (GAMMA**(disc_time-tau-1))*REWARDS[ind][disc_time-tau]
+                            disc_time += 1
+                    else:
+                        G = (G - REWARDS[ind][0]/GAMMA) +  ((GAMMA**SARSA_n)*REWARDS[ind][-1])
                     
-                    
-
-
-
-
-
-                # if episode == EPISODES-1:
-                #     #use greedy action
-                #     continue
-                # if random.random() > epsilon:
-                #     min_angle = random.uniform(0,2*np.pi)
-                                
-                
-                
-                
-                #update value function weights
-            #move all agents
-            # for ind in range(N):
-                # move_agent(ag[ind],controls[ind])
-                # collision = check_collision(ind)
-                # if collision == 0:
-                #     break
-
-        
+                    if tau + SARSA_n < EPISODE_LENGTH:
+                        G = G + ((GAMMA**SARSA_n)*q_fa(STATE[ind][-1],ACTIONS[ind][-1],v_func_w,C))
+                    v_func_w = update_weights(STATE[ind][0],ACTIONS[ind][0],v_func_w,C,G)
+                    if tau%100 == 0 and episode%19==0 and ind == 0 :
+                        with open("save_dump/log.txt", 'a') as file:
+                            file.write(f"Weight have been updated [timestep = {t}] at Epoch : {epoch} and episode : {episode} - Time : {datetime.now()}\n")
+                if tau >EPISODE_LENGTH-1:
+                    break
             [cx,cy] = get_centroid(ag)
-            
+            traj = []
             for a in ag:
                 traj.append([a.x,a.y,a.theta])
-            # if collision != 0: 
-            #     for est in range(ESTIMATION_FREQ):    
-            #         temp_estimate = [centroid_estimate[0][0],centroid_estimate[0][1]] 
-            #         for c in range(N):
-            #             if c == N - 1:
-            #                 centroid_estimate[c][0] = 0.5*(centroid_estimate[c][0] + temp_estimate[0]) + ((v/ESTIMATION_FREQ)*np.cos((controls[c]/na)*(2*np.pi)))
-            #                 centroid_estimate[c][1] = 0.5*(centroid_estimate[c][1] + temp_estimate[1]) + ((v/ESTIMATION_FREQ)*np.sin((controls[c]/na)*(2*np.pi)))
-            #                 break
-            #             centroid_estimate[c][0] = 0.5*(centroid_estimate[c][0] + centroid_estimate[c+1][0]) + ((v/ESTIMATION_FREQ)*np.cos((controls[c]/na)*(2*np.pi)))
-            #             centroid_estimate[c][1] = 0.5*(centroid_estimate[c][1] + centroid_estimate[c+1][1]) + ((v/ESTIMATION_FREQ)*np.sin((controls[c]/na)*(2*np.pi)))
-
-
-
-
-
+            t = t+1
             
 
             if PLOT == 1:
@@ -246,13 +261,15 @@ for i in range(EPOCH):
                 fig.canvas.flush_events()
                 time.sleep(0.005)
 
-            t = t+1
 
-            if count > EPISODE_LENGTH:
+
+            if t >= EPISODE_LENGTH:
                 break
+    Weights_track.append(v_func_w)
     if SAVE == 1:
-        # np.save("q_func_BR_v1.npy",q_func)
-        np.save("traj_cost_PG_trial1",np.array(traj_cost_list))
-
+        np.save("save_dump/FA_weights_1.npy",np.array(Weights_track))
+        np.save("sace_dump/v_func_weights.npy",v_func_w)
+        with open("save_dump/log.txt", 'a') as file:
+            file.write(f"**UPDATE**--Weights file has been saved @ Epoch {epoch} - Time : {datetime.now()}\n")
 plt.waitforbuttonpress()
 

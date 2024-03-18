@@ -79,6 +79,35 @@ def J_i_PG(agent,centroid,r0,d0,n): #Proximal Gradient
 
     return Ji   
 
+
+def incur(state):
+    state = -xlim + 0.5 + state
+
+    agent_1_dummy = Agent(state[0],state[1])
+    agent_2_dummy = Agent(state[2],state[3])
+    agent_3_dummy = Agent(state[4],state[5])
+    d1 = dist(agent_1_dummy,agent_2_dummy)
+    d2 = dist(agent_1_dummy,agent_2_dummy)
+    d3 = dist(agent_1_dummy,agent_2_dummy)
+    [cx,cy] = get_centroid([agent_1_dummy,agent_2_dummy,agent_3_dummy])
+    centroid_dummy = Agent(cx,cy)
+    beacon_dummy = Agent(0,0)
+    dc1 = dist(agent_1_dummy,centroid_dummy)
+    dc2 = dist(agent_2_dummy,centroid_dummy)
+    dc3 = dist(agent_3_dummy,centroid_dummy)
+    
+    cent_err = dist(centroid_dummy,beacon_dummy)    
+    # print(cent_err)
+    Ji = 0
+    Ji += ((d1-d0)**2)*(1 - cost_alpha)
+    Ji += ((d2-d0)**2)*(1 - cost_alpha)
+    Ji += ((d3-d0)**2)*(1 - cost_alpha)
+    Ji += ((dc1 - r0)**2)*cost_alpha
+    Ji += ((dc2 - r0)**2)*cost_alpha
+    Ji += ((dc3 - r0)**2)*cost_alpha
+    Ji += (cent_err**2)*(cost_alpha)
+    return Ji
+
 def J_i_int(ax,ay,tx,ty,centroid,r0,d0,n): 
     agent_dummy = Agent(ax,ay)
     target_dummy = Agent(tx,ty)
